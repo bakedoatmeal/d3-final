@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cereal Data</title>
+  <link rel="stylesheet" href="styles.css">
+</head> 
+<body>
+  <div style="background-color: beige;">
+    <h1>Protein content of 5 best cereals</h1>
+    <svg id="svg" width="1000" height="500"></svg>
+    <h1>Nutritional Breakdown of All-Bran with Extra Fiber</h1>
+    <svg id="svg2" width="1000" height="500"></svg>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>    
+    async function renderTable() {
+
+      let data = await d3.csv('cereal.csv')
+
+      data = data.sort((a, b) => {
+        return parseFloat(b.rating) - parseFloat(a.rating)
+      })
+
+      data = data.slice(0, 5)
+      console.log(data)
+
+      const margin = { top: 10, right: 10, bottom: 20, left: 40 }
+      const width = 1000 - (margin.left + margin.right)
+      const height = 500 - (margin.top + margin.bottom)
+
+      // x scale 
+      const xscale = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([margin.left, width + margin.left])
+        .padding(0.05) // space between bars
+
+      // y scale 
+      const dataExtent = d3.extent(data, d => parseInt(d.protein))
+      const yscale = d3.scaleLinear()
+        .domain(dataExtent)
+        .range([height, margin.bottom])
+
+      const colorscale = d3.scaleLinear()
+        .domain(d3.extent(data, d => parseInt(d.protein)))
+        .range([90, 10])
+
+      // Select the SVG (root node)
+      const svg = d3.select(`#svg`)
+
+      const barGroup = svg.append('g')
+      // Make the bars
+      barGroup 
+        .selectAll('rect')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('fill', d => `hsl(140, 100%, ${colorscale(parseInt(d.protein))}%)`)
+        .attr('x', (d, i) => xscale(d.name))
+        .attr('y', d => yscale(parseInt(d.protein)))
+        .attr('width', xscale.bandwidth())
+        .attr('height', d => height - yscale(parseInt(d.protein)))
+
+      const bottomAxis = d3.axisBottom(xscale)
+      svg
+        .append('g')
+        .attr('transform', `translate(${0}, ${height})`)
+        .call(bottomAxis)
+
+      const leftAxis = d3.axisLeft(yscale)
+          .tickFormat(d3.format('.2s')) // Format the axis
+
+      svg
+      .append('g')
+      .attr('transform', `translate(${margin.left}, 0)`)
+      .call(leftAxis)
+
+      }
+
+      renderTable()
+
+      async function renderTable2() {
+
+        let data = [
+          {name: 'protein', value: 4},
+          {name: 'fiber', value: 14},
+          {name: 'fat', value: 0},
+          {name: 'carbo', value: 8},
+          {name: 'sugars', value: 0},
+        ]
+
+        const margin = { top: 10, right: 10, bottom: 20, left: 40 }
+        const width = 1000 - (margin.left + margin.right)
+        const height = 500 - (margin.top + margin.bottom)
+
+        // x scale 
+        const xscale = d3.scaleBand()
+          .domain(data.map(d => d.name))
+          .range([margin.left, width + margin.left])
+          .padding(0.05) // space between bars
+
+        // y scale 
+        const dataExtent = d3.extent(data, d => parseInt(d.value))
+        const yscale = d3.scaleLinear()
+          .domain(dataExtent)
+          .range([height, margin.bottom])
+
+        const colorscale = d3.scaleLinear()
+          .domain(d3.extent(data, d => parseInt(d.value)))
+          .range([90, 10])
+
+        // Select the SVG (root node)
+        const svg = d3.select(`#svg2`)
+
+        const barGroup = svg.append('g')
+        // Make the bars
+        barGroup 
+          .selectAll('rect')
+          .data(data)
+          .enter()
+          .append('rect')
+          .attr('class', 'bar')
+          .attr('fill', d => `hsl(140, 100%, ${colorscale(parseInt(d.value))}%)`)
+          .attr('x', (d, i) => xscale(d.name))
+          .attr('y', d => yscale(parseInt(d.value)))
+          .attr('width', xscale.bandwidth())
+          .attr('height', d => height - yscale(parseInt(d.value)))
+
+        const bottomAxis = d3.axisBottom(xscale)
+        svg
+          .append('g')
+          .attr('transform', `translate(${0}, ${height})`)
+          .call(bottomAxis)
+
+        const leftAxis = d3.axisLeft(yscale)
+            .tickFormat(d3.format('.2s')) // Format the axis
+
+        svg
+        .append('g')
+        .attr('transform', `translate(${margin.left}, 0)`)
+        .call(leftAxis)
+
+        }
+
+        renderTable2()
+
+      </script>
+</body>
+</html>
